@@ -14,7 +14,7 @@ final itemRepositoryProvider = Provider((ref) {
 });
 
 final itemModelProvider = StateNotifierProvider<ItemNotifier, ItemModel>((ref) {
-  ItemModel item = ItemModel(image: "", name: "", quantity: 0, itemCode: 0);
+  ItemModel item = ItemModel(image: "", name: "", quantity: 0, itemCode: 0,purchasedPrice: 0.0);
   return ItemNotifier(item);
 });
 

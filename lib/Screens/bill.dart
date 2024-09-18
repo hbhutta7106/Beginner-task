@@ -5,6 +5,7 @@ import 'package:pos_app/Controllers/itemcontroller.dart';
 import 'package:pos_app/Models/item.dart';
 import 'package:pos_app/Providers/providers.dart';
 import 'package:pos_app/Widgets/billitemcard.dart';
+import 'package:pos_app/Widgets/container.dart';
 
 class BillScreen extends ConsumerStatefulWidget {
   const BillScreen({super.key});
@@ -15,7 +16,9 @@ class BillScreen extends ConsumerStatefulWidget {
 
 class _BillScreenState extends ConsumerState<BillScreen> {
   int billNumber = 1;
+  bool _showItemData = false;
   List<ItemModel> items = [];
+  double totalAmount = 0.0;
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _disCountController = TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
@@ -75,6 +78,7 @@ class _BillScreenState extends ConsumerState<BillScreen> {
                                   onTap: () {
                                     setState(() {
                                       selectedItem = item;
+                                      _showItemData = true;
                                     });
 
                                     final price = ref
@@ -122,7 +126,16 @@ class _BillScreenState extends ConsumerState<BillScreen> {
                           onChanged: (value) {}),
                     ),
                     const SizedBox(
-                      height: 2,
+                      height: 5,
+                    ),
+                    if (_showItemData)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                        child: container(selectedItem!.quantity.toString(),
+                            selectedItem!.purchasedPrice.toString()),
+                      ),
+                    const SizedBox(
+                      height: 5,
                     ),
                     if (isPriceHide)
                       Row(
@@ -161,6 +174,18 @@ class _BillScreenState extends ConsumerState<BillScreen> {
                                         backgroundColor: Colors.red,
                                         content: Text(
                                           "Please Provide the Price First",
+                                          maxLines: 2,
+                                          overflow: TextOverflow.fade,
+                                          style: TextStyle(
+                                              backgroundColor: Colors.red),
+                                        )));
+                              } else if (double.parse(_priceController.text) <
+                                  selectedItem!.purchasedPrice) {
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(const SnackBar(
+                                        backgroundColor: Colors.red,
+                                        content: Text(
+                                          "Price is Less than the Purchased Price",
                                           maxLines: 2,
                                           overflow: TextOverflow.fade,
                                           style: TextStyle(
@@ -238,10 +263,16 @@ class _BillScreenState extends ConsumerState<BillScreen> {
                                       ref,
                                       items,
                                       context);
+                              final amount = ref
+                                  .read(billItemListNotifierProvider.notifier)
+                                  .calculateTheTotalBill();
+
                               setState(() {
+                                totalAmount = amount;
                                 isQuantityHide = false;
                                 isPriceHide = false;
                                 _priceController.text = '';
+                                _showItemData = false;
                               });
                             },
                             child: const Text("Done"),
@@ -279,16 +310,17 @@ class _BillScreenState extends ConsumerState<BillScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Expanded(
-                          child: TextField(
+                          child: TextFormField(
                             onChanged: (value) {
                               if (value.isNotEmpty) {
-                                setState(() {
-                                  _disCountController.text = '';
-                                  _disCountController.text = value;
-                                });
                               } else {
                                 _disCountController.text = "0";
                               }
+                            },
+                            onSaved: (value) {
+                              _disCountController.text = value!;
+                              
+
                             },
                             controller: _disCountController,
                             keyboardType: TextInputType.number,
@@ -306,11 +338,7 @@ class _BillScreenState extends ConsumerState<BillScreen> {
                               fontSize: 17, fontWeight: FontWeight.w700),
                         ),
                         Text(
-                          ref
-                              .read(billItemControllerNotifier)
-                              .calculateBillTotalAmount(
-                                  _disCountController.text, ref)
-                              .toString(),
+                          totalAmount.toString(),
                           style: const TextStyle(
                               fontSize: 17, fontWeight: FontWeight.w700),
                         ),
@@ -318,15 +346,24 @@ class _BillScreenState extends ConsumerState<BillScreen> {
                     ),
                     ElevatedButton(
                         onPressed: () {
-                          ref.read(billItemControllerNotifier).generateBill(
-                              ref.read(billItemListNotifierProvider),
-                              ref
-                                  .read(billItemControllerNotifier)
-                                  .calculateBillTotalAmount(
-                                      _disCountController.text, ref),
-                              billNumber,
-                              double.parse(_disCountController.text));
-                          billNumber++;
+                          if (double.parse(_disCountController.text) >
+                              totalAmount) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    backgroundColor: Colors.redAccent,
+                                    content: Text(
+                                        "Discount price should be lower than total price ")));
+                          } else {
+                            ref.read(billItemControllerNotifier).generateBill(
+                                ref.read(billItemListNotifierProvider),
+                                ref
+                                    .read(billItemControllerNotifier)
+                                    .calculateBillTotalAmount(
+                                        _disCountController.text, ref, context),
+                                billNumber,
+                                double.parse(_disCountController.text));
+                            billNumber++;
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.amberAccent,

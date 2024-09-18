@@ -23,8 +23,8 @@ class ItemController {
     return base64String;
   }
 
-  static addItemInDatabase(String name, String image, String stock, String code,
-      BuildContext context, WidgetRef ref) async {
+  static addItemInDatabase(String name, String? image, String stock, String code,
+      BuildContext context, WidgetRef ref, double purchasedPrice) async {
     bool isExist =
         ref.read(allItemsProvider.notifier).checkItemExist(int.parse(code));
     if (isExist) {
@@ -36,7 +36,9 @@ class ItemController {
           name: name,
           quantity: int.parse(stock),
           itemCode: int.parse(code),
-          image: image);
+          image: image,
+          purchasedPrice: purchasedPrice
+          );
       int done = await ref.read(itemRepositoryProvider).addItem(item);
       if (done > 0) {
         ref.read(allItemsProvider.notifier).addItem(item);
@@ -54,14 +56,16 @@ class ItemController {
   }
 
   static updateItemInTheDatabase(WidgetRef ref, BuildContext context,
-      String name, String? image, String stock, String code) async {
+      String? name, String? image, String? stock, String code,String? purchasedPrice) async {
     final item = ref.read(itemModelProvider);
     
     final updatedItem = item.copyWith(
         name: name,
-        quantity: int.parse(stock),
+        quantity:stock!=null ? int.parse(stock):0,
         itemCode: int.parse(code),
-        image: image);
+        image: image,
+        purchasedPrice:purchasedPrice!=null? double.parse(purchasedPrice):0,
+        );
     int done = await ref
         .read(itemRepositoryProvider)
         .updateItemInTheDatabase(updatedItem, int.parse(code));

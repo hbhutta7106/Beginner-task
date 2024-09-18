@@ -29,7 +29,8 @@ class DatabaseService {
     name TEXT,
     itemCode INTEGER,
     quantity INTEGER,
-    image TEXT
+    image TEXT,
+    purchasedPrice REAL
        )
   ''');
 

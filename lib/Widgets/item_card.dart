@@ -1,5 +1,5 @@
-
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pos_app/Models/item.dart';
@@ -24,14 +24,16 @@ class ItemCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           AspectRatio(
-              aspectRatio: 1.4,
-              child: SizedBox(
-                child:Image.memory(
-                  base64Decode(item.image),
-                  fit: BoxFit.cover,
-                  width: 200,
-                ),
-              )),
+            aspectRatio: 1.4,
+            child: SizedBox(
+                child: item.image == null
+                    ? const Center(child: Text("No image of the Item"))
+                    : Image.memory(
+                        base64Decode(item.image!),
+                        fit: BoxFit.fitWidth,
+                        width: 200,
+                      )),
+          ),
           const SizedBox(
             height: 5,
           ),
@@ -43,7 +45,11 @@ class ItemCard extends StatelessWidget {
                 item.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontWeight: FontWeight.w400),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                  color: Colors.black87,
+                ),
               ),
               const SizedBox(
                 height: 3,
@@ -95,7 +101,6 @@ class ItemCard extends StatelessWidget {
                     ),
                     onPressed: () {
                       if (number == 2) {
-                        
                         showDialog(
                             context: context,
                             builder: (context) {
@@ -106,7 +111,7 @@ class ItemCard extends StatelessWidget {
                                 child: SizedBox(
                                   height: 250,
                                   width: 300,
-                                  child: alertDialog(context,function!),
+                                  child: alertDialog(context, function!),
                                 ),
                               );
                             });

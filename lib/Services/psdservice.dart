@@ -101,7 +101,6 @@ class PdfService {
     final filePath = "${directory!.path}/BillNumber-$number.pdf";
     final file = File(filePath);
     await file.writeAsBytes(generatedPdf);
-    print(filePath);
     OpenFile.open(filePath);
   }
 }

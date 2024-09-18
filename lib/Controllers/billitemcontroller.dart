@@ -46,28 +46,31 @@ class BillItemController {
     }
   }
 
-  double calculateBillTotalAmount(String discountPrice, WidgetRef ref) {
+  double calculateBillTotalAmount(
+      String discountPrice, WidgetRef ref, BuildContext context) {
     double totalAmount =
         ref.read(billItemListNotifierProvider.notifier).calculateTheTotalBill();
-
-    if (double.parse(discountPrice) <= 0) {
+    if (double.parse(discountPrice) > totalAmount) {
       return totalAmount;
     } else {
       return totalAmount - double.parse(discountPrice);
     }
   }
-  
 
+  double calculateItemsAmount(WidgetRef ref, BuildContext context) {
+    double totalAmount =
+        ref.read(billItemListNotifierProvider.notifier).calculateTheTotalBill();
+    return totalAmount;
+  }
 
-  void generateBill(
-      List<BillItem> billItems, double totalAmount, int billNumber,double discountAmount) async {
+  void generateBill(List<BillItem> billItems, double totalAmount,
+      int billNumber, double discountAmount) async {
     Bill bill = Bill(
         billItems: billItems,
         totalBillAmount: totalAmount,
         billNumber: billNumber);
     PdfService pdfFile = PdfService();
-    final generatedPdf = await pdfFile.createThePdfFile(bill,discountAmount);
+    final generatedPdf = await pdfFile.createThePdfFile(bill, discountAmount);
     pdfFile.saveTheFileInTheDevice(billNumber, generatedPdf);
-
   }
 }

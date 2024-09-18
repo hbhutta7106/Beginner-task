@@ -3,11 +3,13 @@ class ItemModel {
       {required this.name,
       required this.quantity,
       required this.itemCode,
-      required this.image});
+      this.image,
+      required this.purchasedPrice});
   final String name;
   final int quantity;
   final int itemCode;
-  final String image;
+  String? image;
+  final double purchasedPrice;
 
   Map<String, dynamic> toMap() {
     final result = <String, dynamic>{};
@@ -16,26 +18,29 @@ class ItemModel {
     result.addAll({'quantity': quantity});
     result.addAll({'itemCode': itemCode});
     result.addAll({'image': image});
+    result.addAll({'purchasedPrice': purchasedPrice});
 
     return result;
   }
 
   factory ItemModel.fromMap(Map<String, dynamic> map) {
     return ItemModel(
-      name: map['name'] ?? '',
-      quantity: map['quantity']?.toInt() ?? 0.0,
-      itemCode: map['itemCode']?.toInt() ?? 0,
-      image: map['image'] ?? "",
-    );
+        name: map['name'] ?? '',
+        quantity: map['quantity']?.toInt() ?? 0.0,
+        itemCode: map['itemCode']?.toInt() ?? 0,
+        image: map['image'],
+        purchasedPrice:map['purchasedPrice']?.toDouble()??0.0,
+        );
   }
 
   ItemModel copyWith(
-      {String? name, int? quantity, int? itemCode, String? image}) {
+      {String? name, int? quantity, int? itemCode, String? image, double? purchasedPrice}) {
     return ItemModel(
       name: name ?? this.name,
       quantity: quantity ?? this.quantity,
       itemCode: itemCode ?? this.itemCode,
       image: image ?? this.image,
+      purchasedPrice: purchasedPrice ?? this.purchasedPrice, 
     );
   }
 }

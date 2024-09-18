@@ -31,7 +31,10 @@ class _AddUpdateScreenState extends ConsumerState<AddUpdateScreen> {
       _itemCodeController.text = item.itemCode.toString();
       _nameController.text = item.name;
       _itemAmountController.text = item.quantity.toString();
-      base64Image = base64Decode(item.image);
+      _purchasedPriceController.text = item.purchasedPrice.toString().trim();
+      if (item.image != null) {
+        base64Image = base64Decode(item.image!);
+      }
     }
   }
 
@@ -40,6 +43,7 @@ class _AddUpdateScreenState extends ConsumerState<AddUpdateScreen> {
       _itemCodeController.text = '';
       _nameController.text = "";
       _itemAmountController.text = '';
+      _purchasedPriceController.text = '';
       imageFile = null;
     });
   }
@@ -56,6 +60,7 @@ class _AddUpdateScreenState extends ConsumerState<AddUpdateScreen> {
   final _itemAmountController = TextEditingController();
   final _itemCodeController = TextEditingController();
   final _formkey = GlobalKey<FormState>();
+  final _purchasedPriceController = TextEditingController();
 
   File? imageFile;
   Uint8List? base64Image;
@@ -63,7 +68,7 @@ class _AddUpdateScreenState extends ConsumerState<AddUpdateScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Add Screen"),
+        title:widget.whichScreen==1? const Text("Edit Screen"):const Text("Update Screen"),
         centerTitle: true,
         backgroundColor: Colors.blueAccent,
       ),
@@ -81,7 +86,8 @@ class _AddUpdateScreenState extends ConsumerState<AddUpdateScreen> {
                       _nameController.text,
                       base64Encode(base64Image!),
                       _itemAmountController.text,
-                      _itemCodeController.text);
+                      _itemCodeController.text,
+                      _purchasedPriceController.text);
                 } else {
                   final base64StrinImage =
                       await ItemController.convertImageIntoBase64String(
@@ -92,22 +98,27 @@ class _AddUpdateScreenState extends ConsumerState<AddUpdateScreen> {
                       _nameController.text,
                       base64StrinImage,
                       _itemAmountController.text,
-                      _itemCodeController.text);
+                      _itemCodeController.text,
+                      _purchasedPriceController.text);
                 }
               } else {
-                if (_formkey.currentState!.validate() && imageFile != null) {
+                if (_formkey.currentState!.validate()) {
                   _formkey.currentState!.save();
+                  String? base64StrinImage;
+                  if (imageFile != null) {
+                    base64StrinImage =
+                        await ItemController.convertImageIntoBase64String(
+                            imageFile!);
+                  }
 
-                  final base64StrinImage =
-                      await ItemController.convertImageIntoBase64String(
-                          imageFile!);
                   ItemController.addItemInDatabase(
                       _nameController.text,
                       base64StrinImage,
                       _itemAmountController.text,
                       _itemCodeController.text,
                       context,
-                      ref);
+                      ref,
+                      double.parse(_purchasedPriceController.text));
                   setControllerText();
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -169,6 +180,7 @@ class _AddUpdateScreenState extends ConsumerState<AddUpdateScreen> {
                       child: TextFormField(
                           onSaved: (value) {
                             _itemAmountController.text = value!;
+                            
                           },
                           onChanged: (value) {
                             if (value.isNotEmpty) {}
@@ -225,6 +237,28 @@ class _AddUpdateScreenState extends ConsumerState<AddUpdateScreen> {
                 const SizedBox(
                   height: 10,
                 ),
+                TextFormField(
+                    onSaved: (value) {
+                      _purchasedPriceController.text = value!;
+                    },
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return "Please Enter purchased Price of Item";
+                      }
+                      return null;
+                    },
+                    controller: _purchasedPriceController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                        fillColor: Colors.blue[100],
+                        filled: true,
+                        label: const Text("Purchased Price"),
+                        border: const OutlineInputBorder(),
+                        hintText: "Item Purchased Price",
+                        prefixIcon: const Icon(Icons.qr_code_2_rounded))),
+                const SizedBox(
+                  height: 10,
+                ),
                 Stack(
                   children: [
                     GestureDetector(
@@ -268,7 +302,7 @@ class _AddUpdateScreenState extends ConsumerState<AddUpdateScreen> {
                             child: IconButton(
                                 onPressed: () {
                                   setState(() {
-                                     imageFile = null;
+                                    imageFile = null;
                                     base64Image = null;
                                   });
                                 },
